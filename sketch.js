@@ -1,16 +1,15 @@
-// serial variables
+// Serial variables
 let mSerial;
-
 let connectButton;
-
 let readyToReceive;
 
-// project variables
-let mElls = [];
+// Project variables
+let circlePattern = [];
 
+// Serial receive function
 function receiveSerial() {
   let line = mSerial.readUntil("\n");
-  trim(line);
+  line = trim(line);
   if (!line) return;
 
   if (line.charAt(0) != "{") {
@@ -19,41 +18,51 @@ function receiveSerial() {
     return;
   }
 
-  // get data from Serial string
+  // Parse JSON data
   let data = JSON.parse(line).data;
-  let a0 = data.A0;
-  let d2 = data.D2;
+  let photoResistor = data.A5.value;
+  let potentiometer = data.A7.value;
 
-  // use data to update project variables
-  if (d2.isPressed) {
-    mElls.push({
-      x: random(width),
-      y: random(height),
-      c: map(d2.count % 20, 0, 20, 155, 255),
-      d: map(a0.value, 0, 4095, 20, 200),
-    });
+  // Update background brightness
+  background(map(photoResistor, 0, 1023, 0, 255));
+
+  // Update circle sizes
+  let newRadius = map(potentiometer, 0, 4098, 5, 50);
+  for (let i = 0; i < circlePattern.length; i++) {
+    circlePattern[i].size = (circlePattern[i].x + circlePattern[i].y) % 100 === 0 ? newRadius : newRadius / 2;
   }
 
-  // serial update
+  // Serial update
   readyToReceive = true;
 }
 
+// Connect to serial
 function connectToSerial() {
   if (!mSerial.opened()) {
     mSerial.open(9600);
-
     readyToReceive = true;
     connectButton.hide();
   }
 }
 
+// Setup function
 function setup() {
-  // setup project
+  // Canvas setup
   createCanvas(windowWidth, windowHeight);
 
-  // setup serial
-  readyToReceive = false;
+  // Circle pattern setup
+  for (let x = 0; x < windowWidth; x += 50) {
+    for (let y = 0; y < windowHeight; y += 50) {
+      circlePattern.push({
+        x: x,
+        y: y,
+        size: (x + y) % 100 === 0 ? 25 : 10
+      });
+    }
+  }
 
+  // Serial setup
+  readyToReceive = false;
   mSerial = createSerial();
 
   connectButton = createButton("Connect To Serial");
@@ -61,24 +70,24 @@ function setup() {
   connectButton.mousePressed(connectToSerial);
 }
 
+// Draw function
 function draw() {
-  // project logic
-  background(0);
-
-  for (let i = 0; i < mElls.length; i++) {
-    let me = mElls[i];
-    fill(me.c, 0, 0);
-    ellipse(me.x, me.y, me.d, me.d);
+  // Draw circles
+  for (let i = 0; i < circlePattern.length; i++) {
+    let c = circlePattern[i];
+    fill(233, 212, 0); // Fixed color for the circles
+    noStroke();
+    ellipse(c.x, c.y, c.size);
   }
 
-  // update serial: request new data
+  // Serial update: request new data
   if (mSerial.opened() && readyToReceive) {
     readyToReceive = false;
     mSerial.clear();
     mSerial.write(0xab);
   }
 
-  // update serial: read new data
+  // Serial update: read new data
   if (mSerial.availableBytes() > 8) {
     receiveSerial();
   }
