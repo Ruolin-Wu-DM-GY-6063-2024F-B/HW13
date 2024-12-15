@@ -1,17 +1,3 @@
-# HW13 Template
+The photoresistor controls the lightness of the background in real-time based on the surrounding light. The potentiometer allows manual adjustment of the diameter of the circule, giving user-defined control. Button allows users to establish the Serial connection, and the grid of circles is drawn based on predefined positions but dynamically changes in response to the potentiometer.
 
-Arduino reads a button on pin 2 and a potentiometer on pin A0 and passes those values on to the p5js sketch via a Serial connection.
-
-The object that is created and sent to p5js looks like this:
-
-```
-data = {
-  A0: { value: integer },
-  D2: {
-    isPressed: boolean,
-    count: integer
-  }
-}
-```
-
-In p5js `A0.value` is used to change ellipse size, `D2.isPressed` is used to add new ellipses to an array and `D2.count` is used to change the color of new ellipses.
+![image](https://github.com/user-attachments/assets/a7916c40-5c98-4da1-a42d-1c17628be08c)
