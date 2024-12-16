@@ -26,21 +26,20 @@ void sendData() {
 }
 
 void setup() {
-  // Serial setup
+
   Serial.begin(9600);
   while (!Serial) {}
 
-  // Pin setup
   pinMode(A5, INPUT);
   pinMode(A7, INPUT);
-  pinMode(D5, INPUT_PULLUP); // Button with pull-up resistor
+  pinMode(D5, INPUT_PULLUP); 
 }
 
 void loop() {
-  // Read sensor values
+
   photoResistorValue = analogRead(A5);
   potentiometerValue = analogRead(A7);
-  buttonState = !digitalRead(D5); // Active low
+  buttonState = !digitalRead(D5); 
 
   // Count button clicks
   if (buttonState && buttonState != prevButtonState) {
@@ -48,7 +47,6 @@ void loop() {
   }
   prevButtonState = buttonState;
 
-  // Check if there's a request for data and send new data
   if (Serial.available() > 0) {
     int byteIn = Serial.read();
     if (byteIn == 0xAB) {
